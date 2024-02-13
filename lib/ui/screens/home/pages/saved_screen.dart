@@ -1,80 +1,83 @@
 import 'package:flutter/material.dart';
-import '../../../../services/local_database/entities/local_news.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:taazakhabar/ui/screens/home/newsdetail.dart';
+import 'package:taazakhabar/ui/widgets/news_card.dart';
+
+
+import '../../../../blocs/localnews_bloc/local_news_bloc.dart';
+import '../../../../blocs/localnews_bloc/local_news_event.dart';
+import '../../../../blocs/localnews_bloc/local_news_state.dart';
+import '../../../../data/models/news_model.dart';
 import '../../../../services/local_database/isar_database.dart';
 
-class SavedScreen extends StatefulWidget {
+class SavedScreen extends StatelessWidget {
   const SavedScreen({Key? key}) : super(key: key);
 
   @override
-  State<SavedScreen> createState() => _SavedScreenState();
-}
-
-class _SavedScreenState extends State<SavedScreen> {
-  final isarService = IsarService();
-  late List<LocalNews?> _savedNews = []; // Declare _savedNews here
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSavedNews();
-  }
-
-  Future<void> _loadSavedNews() async {
-//
-    final savedNews = await isarService.getAllSavedNews([1,2,3,4,5,6,7,8]);
-    setState(() {
-      _savedNews = savedNews;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text(
-                'Saved News :',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    return BlocProvider(
+      create: (context) => LocalNewsBloc(IsarService())..add(LoadSavedNews()),
+      child: Scaffold(
+        body: Container(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Text(
+                  'Saved News :',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
-            Expanded(child: _buildNewsList()),
-          ],
+              Expanded(child: _buildNewsList()),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildNewsList() {
-    return ListView.builder(
-      itemCount: _savedNews.length,
-      itemBuilder: (context, index) {
-        final news = _savedNews[index];
-        if (news != null) {
-          return ListTile(
-            title: Text(news.title),
-            subtitle: Text(news.description),
-            leading: IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () {
-                isarService.deleteNews(index);
-                setState(() {
-
-                });
+    return BlocBuilder<LocalNewsBloc, LocalNewsState>(
+      builder: (context, state) {
+        if (state is LocalNewsLoading) {
+          return Center(child: CircularProgressIndicator());
+        } else if (state is LocalNewsLoaded) {
+          if (state.savedNews.isEmpty) {
+            return Center(
+              child: Text(
+                'No saved news items',
+                style: TextStyle(fontSize: 18),
+              ),
+            );
+          } else {
+            return ListView.builder(
+              itemCount: state.savedNews.length,
+              itemBuilder: (context, index) {
+                final news = state.savedNews[index];
+                if (news != null) {
+                  return NewsCard(
+                    icon: Icons.delete,
+                    onPressed: () {
+                      BlocProvider.of<LocalNewsBloc>(context)
+                          .add(DeleteNews(news.id));
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        backgroundColor: Colors.redAccent,
+                          content: Text("News Deleted from Saved", style: TextStyle(color: Colors.white)), duration: Duration(seconds: 2)));
+                    },
+                    localNews: news,
+                  );
+                } else {
+                  return Text("No data"); // Or you can show a loading indicator or placeholder
+                }
               },
-            ),
-            onTap: () {
-              // Handle tapping on news item
-            },
-          );
+            );
+          }
         } else {
-          return SizedBox(); // Or you can show a loading indicator or placeholder
+          return Text("Error loading news");
         }
       },
     );
   }
-}
 
+}

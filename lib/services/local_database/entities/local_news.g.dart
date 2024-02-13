@@ -78,6 +78,7 @@ LocalNews _localNewsDeserialize(
 ) {
   final object = LocalNews();
   object.description = reader.readString(offsets[0]);
+  object.id = id;
   object.publishedAt = reader.readString(offsets[1]);
   object.title = reader.readString(offsets[2]);
   return object;
@@ -109,7 +110,9 @@ List<IsarLinkBase<dynamic>> _localNewsGetLinks(LocalNews object) {
   return [];
 }
 
-void _localNewsAttach(IsarCollection<dynamic> col, Id id, LocalNews object) {}
+void _localNewsAttach(IsarCollection<dynamic> col, Id id, LocalNews object) {
+  object.id = id;
+}
 
 extension LocalNewsQueryWhereSort
     on QueryBuilder<LocalNews, LocalNews, QWhere> {

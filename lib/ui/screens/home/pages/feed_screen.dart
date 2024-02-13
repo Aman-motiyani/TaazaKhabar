@@ -6,6 +6,7 @@ import 'package:taazakhabar/blocs/news_bloc/news_state.dart';
 import 'package:taazakhabar/blocs/weather_bloc/weather_bloc.dart';
 import 'package:taazakhabar/data/models/news_model.dart';
 import 'package:taazakhabar/ui/screens/home/newsdetail.dart';
+import 'package:taazakhabar/ui/widgets/news_card.dart';
 
 import '../../../../blocs/onboarding_bloc/onboarding_bloc.dart';
 import '../../../../data/models/user_model.dart';
@@ -134,74 +135,47 @@ class _FeedScreenState extends State<FeedScreen> {
       itemCount: newsList.length,
       itemBuilder: (context, index) {
         final news = newsList[index];
-        return  Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(2))),
-            elevation: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                   Row(
-                      children: [
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Flexible(
-                            child: GestureDetector(
-                              onTap: (){Navigator.push(context, MaterialPageRoute(builder: (context) => NewsDetailScreen(news: news),));},
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    news.title,
-                                    style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w500
-                                    ),
-                                    maxLines: 1, // Display title in one line
-                                    overflow: TextOverflow.ellipsis, // Show ellipsis (...) if the title exceeds one line
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    news.description,
-                                    style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                        fontWeight: FontWeight.bold
-                                    ),
-                                    maxLines: 4, // Display description in three lines
-                                    overflow: TextOverflow.ellipsis, // Show ellipsis (...) if the description exceeds three lines
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        const SizedBox(width: 2),
-                        SizedBox(width: 2,),
-                        IconButton(
-                            onPressed: () async {
-                              final localNews = LocalNews()
-                                ..title = news.title
-                                ..description = news.description
-                                ..publishedAt = news.publishedAt;
+        return NewsCard(onPressed: () async {
+          try{
+            final localNews = LocalNews()
+              ..title = news.title
+              ..description = news.description
+              ..publishedAt = news.publishedAt;
 
-                              // Save the news using IsarService
-                              await _isarService.saveNews(localNews);
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("News saved")),
-                              );
-                            },
-                            icon: Icon(Icons.save_alt_outlined)
-                        ),
-                      ],
+            final isSaved = await _isarService.saveNews(localNews);
+            if (isSaved) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(backgroundColor: Colors.green,content: Text("News saved" ,style: TextStyle(color: Colors.white)), duration: Duration(seconds: 2)),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: Colors.redAccent,
+                    content: Text(
+                      "News already saved",
+                      style: TextStyle(color: Colors.white),
                     ),
-                ],
+                    duration: Duration(seconds: 2)
+                ),
+              );
+            }
+          }
+          catch(e){
+            print("Error Saving news $e");
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: Colors.redAccent,
+                  content:
+                  Text(
+                    "Error Saving News",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  duration: Duration(seconds: 2)
               ),
-            ),
-        );
-
+            );
+          }
+        },
+          icon: Icons.save_alt_outlined,news: news,);
       },
     );
   }

@@ -5,6 +5,9 @@ import 'package:taazakhabar/blocs/news_bloc/news_event.dart';
 import 'package:taazakhabar/blocs/news_bloc/news_state.dart';
 import 'package:taazakhabar/data/models/news_model.dart';
 
+import '../../../../services/local_database/entities/local_news.dart';
+import '../../../../services/local_database/isar_database.dart';
+import '../../../widgets/news_card.dart';
 import '../newsdetail.dart';
 
 class FavScreen extends StatefulWidget {
@@ -16,6 +19,7 @@ class FavScreen extends StatefulWidget {
 
 class _FavScreenState extends State<FavScreen> {
   late String _selectedCategory;
+  final IsarService _isarService = IsarService();
 
   @override
   void initState() {
@@ -32,30 +36,34 @@ class _FavScreenState extends State<FavScreen> {
 
   Widget _buildCategoryDropdown() {
     return Padding(
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.all(8.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text("Select Category : "),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(2))
-            ),
-            child: DropdownButtonFormField<String>(
-              value: _selectedCategory,
-              onChanged: (newValue) {
-                setState(() {
-                  _selectedCategory = newValue!;
-                });
-                _fetchFavNewsByCategory(newValue!);
-              },
-              items: categories.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(2))
+
+              ),
+              child: DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                onChanged: (newValue) {
+                  setState(() {
+                    _selectedCategory = newValue!;
+                  });
+                  _fetchFavNewsByCategory(newValue!);
+                },
+                items: categories.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
             ),
           ),
           SizedBox(height: 20),
@@ -83,63 +91,46 @@ class _FavScreenState extends State<FavScreen> {
       itemCount: newsList.length,
       itemBuilder: (context, index) {
         final news = newsList[index];
-        return Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(2))),
-          elevation: 1,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    const SizedBox(
-                      width: 10,
+        return NewsCard(onPressed: () async {
+          try{
+            final localNews = LocalNews()
+              ..title = news.title
+              ..description = news.description
+              ..publishedAt = news.publishedAt;
+
+            final isSaved = await _isarService.saveNews(localNews);
+            if (isSaved) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(backgroundColor: Colors.green,content: Text("News saved" ,style: TextStyle(color: Colors.white)), duration: Duration(seconds: 2)),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    backgroundColor: Colors.redAccent,
+                    content: Text(
+                      "News already saved",
+                      style: TextStyle(color: Colors.white),
                     ),
-                    Flexible(
-                      child: GestureDetector(
-                        onTap:(){Navigator.push(context, MaterialPageRoute(builder: (context) => NewsDetailScreen(news: news),));},
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              news.title,
-                              style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w500
-                              ),
-                              maxLines: 1, // Display title in one line
-                              overflow: TextOverflow.ellipsis, // Show ellipsis (...) if the title exceeds one line
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              news.description,
-                              style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.bold
-                              ),
-                              maxLines: 4, // Display description in three lines
-                              overflow: TextOverflow.ellipsis, // Show ellipsis (...) if the description exceeds three lines
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 2),
-                    SizedBox(width: 2,),
-                    IconButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Saved")));
-                        },
-                        icon: Icon(Icons.save_alt_outlined)
-                    ),
-                  ],
+                    duration: Duration(seconds: 2)
                 ),
-              ],
-            ),
-          ),
-        );
+              );
+            }
+          }
+          catch(e){
+            print("Error Saving news $e");
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content:
+                  Text(
+                    "Error Saving News",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  duration: Duration(seconds: 2)
+              ),
+            );
+          }
+        },
+          icon: Icons.save_alt_outlined,news: news,);
       },
     );
   }
@@ -150,4 +141,4 @@ class _FavScreenState extends State<FavScreen> {
 }
 
 // Dummy list of categories (replace with your actual categories)
-List<String> categories = ['Politics', 'Sports', 'Entertainment', 'Business'];
+List<String> categories = ['Technology', 'Sports', 'Entertainment', 'Business'];

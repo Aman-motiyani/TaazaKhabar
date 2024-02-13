@@ -7,7 +7,7 @@ part 'local_news.g.dart';
 @Collection()
 class LocalNews{
 
-  final Id id = Isar.autoIncrement;
+  Id id = Isar.autoIncrement;
 
   @Index(
     unique: true,

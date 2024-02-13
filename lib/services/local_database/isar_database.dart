@@ -14,16 +14,35 @@ class IsarService {
 
   static Isar get isar => _isar;
 
-  Future<List<LocalNews?>> getAllSavedNews(List<int> ids) async {
-    final newsList = await _isar.localNews.getAll(ids);
+  Future<List<LocalNews>> getAllSavedNews() async {
+    List<LocalNews> newsList = []; // Initialize as an empty list
+    await isar.txn(() async {
+      newsList = await isar.localNews.where().findAll();
+    });
     return newsList;
   }
 
-  Future<void> saveNews(LocalNews news) async {
-    await _isar.writeTxn<int>(() {
-      return _isar.localNews.put(news);
+  Future<bool> saveNews(LocalNews news) async {
+    List<LocalNews> newsList = []; // Initialize as an empty list
+    await _isar.txn(() async {
+      newsList = await _isar.localNews.where().findAll();
     });
+
+    // Check if the provided news is already present in the newsList
+    bool isNewsPresent = newsList.any((item) => item.title == news.title);
+
+    if (isNewsPresent) {
+      return false; // News already saved
+    } else {
+      await _isar.writeTxn<int>(() {
+        return _isar.localNews.put(news);
+      });
+      return true; // News saved successfully
+    }
   }
+
+
+
 
   Future<void> deleteNews(int id) async {
     await _isar.writeTxn<bool>(() {
