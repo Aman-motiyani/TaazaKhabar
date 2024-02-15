@@ -1,34 +1,33 @@
 part of 'onboarding_bloc.dart';
 
 @immutable
-// onboarding_events.dart
 abstract class OnboardingEvent {}
 
-class NameEnteredEvent extends OnboardingEvent {
-  final String username;
+class NameChanged extends OnboardingEvent  {
+  final String name;
 
-  NameEnteredEvent(this.username);
+  NameChanged(this.name);
+
+  List<Object?> get props => [name];
 }
 
-class CityEnteredEvent extends OnboardingEvent {
-  final String city;
+class CategorySelected extends OnboardingEvent {
+  final String category;
 
-  CityEnteredEvent(this.city);
+  CategorySelected(this.category);
+
+  @override
+  List<Object?> get props => [category];
 }
 
-class CategorySelectedEvent extends OnboardingEvent {
-  final List<String> categories;
+class FetchInitialData extends OnboardingEvent {}
 
-  CategorySelectedEvent(this.categories);
-}
 
-// settings_events.dart
-abstract class SettingsEvent {}
+class CityNameChanged extends OnboardingEvent {
+  final String cityName;
 
-class ProfileUpdateEvent extends SettingsEvent {
-  final String username;
-  final String city;
-  final List<String> categories;
+  CityNameChanged(this.cityName);
 
-  ProfileUpdateEvent(this.username, this.city, this.categories);
+  @override
+  List<Object?> get props => [cityName];
 }

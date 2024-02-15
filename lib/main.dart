@@ -12,6 +12,7 @@ import 'package:taazakhabar/services/local_database/isar_database.dart';
 import 'package:taazakhabar/services/news_service.dart';
 import 'package:taazakhabar/services/weather_service.dart';
 import 'package:taazakhabar/ui/screens/home/nav.dart';
+import 'package:taazakhabar/ui/screens/onboarding/name_input_screen.dart.dart';
 
 
 
@@ -24,13 +25,6 @@ void main() async {
 
 class MyApp extends StatelessWidget {
 
-  static NewsService apiService = NewsService.create();
-  final NewsRepository newsRepository =
-  NewsRepository(apiService);
-
-  static WeatherService weatherService = WeatherService.create();
-  final WeatherRepository weatherRepository = WeatherRepository(weatherService);
-
   MyApp({super.key});
 
   @override
@@ -38,16 +32,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Taaza Khabar',
-      home:  BlocProvider(
-        create: (context) => NewsBloc(newsRepository), // Instantiate ChopperService instead of ApiService
-        child: BlocProvider(
-          create: (context) => WeatherBloc(weatherRepository),
-          child : BlocProvider(
+      home:   BlocProvider(
               create: (context) => OnboardingBloc(),
-              child : NavigationScreen(),
+              child : NameScreen(),
           )
-        )
-      ),
-    );
+        );
   }
 }

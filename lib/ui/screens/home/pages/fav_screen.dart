@@ -24,7 +24,8 @@ class _FavScreenState extends State<FavScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedCategory = categories.first; // Initialize selected category
+    _selectedCategory = categories.first;
+    _fetchFavNewsByCategory(_selectedCategory);// Initialize selected category
   }
 
   @override

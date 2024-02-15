@@ -1,27 +1,78 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:taazakhabar/ui/screens/home/pages/fav_screen.dart';
+
+import '../../../blocs/onboarding_bloc/onboarding_bloc.dart';
+import '../../../blocs/onboarding_bloc/onboarding_controller.dart';
 
 class Settings extends StatefulWidget {
-  const Settings({Key? key}) : super(key: key);
+  final OnboardingBloc onboardingBloc;
+
+  const Settings({
+    Key? key,
+    required this.onboardingBloc,
+  }) : super(key: key);
 
   @override
   State<Settings> createState() => _SettingsState();
 }
 
 class _SettingsState extends State<Settings> {
+  OnboardingController controller = Get.put(OnboardingController());
+  List<String> allCategories = [
+    'Business',
+    'Entertainment',
+    'Sports',
+    'Technology',
+  ];
   TextEditingController _nameController = TextEditingController();
   TextEditingController _cityController = TextEditingController();
+  late List<String> selectedCategories;
 
-  List<String> allCategories = ['a', 'b', 'c', 'd'];
-  List<String> selectedCategories = ['a', 'c'];
+  bool _isEditing = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController.text = "Aman";
-    _cityController.text = "Jaipur";
+    _nameController = TextEditingController();
+    _cityController = TextEditingController();
+    selectedCategories = [];
+    // Fetch initial data from the bloc
+    widget.onboardingBloc.add(FetchInitialData());
+    _updateStateFromBloc(widget.onboardingBloc.state);
   }
 
-  bool _isEditing = false;
+  void _updateStateFromBloc(OnboardingState state) {
+    print(state);
+    if (state is NameUpdated) {
+      setState(() {
+        _nameController.text = state.name;
+      });
+    } else if (state is CategoriesUpdated) {
+      setState(() {
+        selectedCategories = List.from(state.selectedCategories);
+      });
+    } else if (state is CityNameUpdated) {
+      setState(() {
+        _cityController.text = state.cityName;
+      });
+    } else if (state is DataLoaded) {
+      setState(() {
+        _nameController.text = state.name;
+        _cityController.text = state.cityName;
+        selectedCategories = List.from(state.selectedCategories);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _cityController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +86,7 @@ class _SettingsState extends State<Settings> {
               setState(() {
                 _isEditing = !_isEditing;
                 if (!_isEditing) {
-                  // Save changes here
+                  _saveChanges();
                 }
               });
             },
@@ -106,5 +157,13 @@ class _SettingsState extends State<Settings> {
         );
       },
     );
+  }
+
+  void _saveChanges() {
+    widget.onboardingBloc.add(CityNameChanged(_cityController.text));
+    widget.onboardingBloc.add(NameChanged(_nameController.text));
+    for (String category in selectedCategories) {
+      widget.onboardingBloc.add(CategorySelected(category));
+    }
   }
 }

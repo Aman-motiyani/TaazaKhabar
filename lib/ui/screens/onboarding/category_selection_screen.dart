@@ -1,22 +1,29 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../blocs/onboarding_bloc/onboarding_bloc.dart';
 import 'package:taazakhabar/ui/screens/home/nav.dart';
 
-import '../../../blocs/onboarding_bloc/onboarding_bloc.dart';
+class CategoryScreen extends StatefulWidget {
+  final OnboardingBloc onboardingBloc; // Accept the OnboardingBloc instance as a parameter
+  const CategoryScreen({Key? key, required this.onboardingBloc}) : super(key: key);
 
-class CategoryScreen extends StatelessWidget {
-  const CategoryScreen({Key? key}) : super(key: key);
+  @override
+  _CategoryScreenState createState() => _CategoryScreenState();
+}
+
+class _CategoryScreenState extends State<CategoryScreen> {
+  List<String> selectedCategories = []; // List to store selected categories
+
+  // List of categories
+  final List<String> categories = [
+    'Business',
+    'Entertainment',
+    'Sports',
+    'Technology',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final List<String> categories = [
-      'Business',
-      'Entertainment',
-      'Sports',
-      'Technology',
-    ];
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Select Categories'),
@@ -24,15 +31,33 @@ class CategoryScreen extends StatelessWidget {
       body: ListView.builder(
         itemCount: categories.length,
         itemBuilder: (context, index) {
+          final category = categories[index];
           return ListTile(
-            title: Text(categories[index]),
+            title: Text(category),
+            // Check if the category is already selected
+            selected: selectedCategories.contains(category),
             onTap: () {
-              List<String> selectedCategories = [categories[index]];
-              BlocProvider.of<OnboardingBloc>(context).add(CategorySelectedEvent(selectedCategories));
-              Navigator.push(context, MaterialPageRoute(builder: (context) => NavigationScreen()));
+              setState(() {
+                // If category is already selected, remove it, else add it
+                if (selectedCategories.contains(category)) {
+                  selectedCategories.remove(category);
+                } else {
+                  selectedCategories.add(category);
+                }
+              });
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Add the list of selected categories to the bloc
+         for (String category in categories){
+           widget.onboardingBloc.add(CategorySelected(category));
+         }
+          Navigator.push(context, MaterialPageRoute(builder: (context) => NavigationScreen()));
+        },
+        child: Icon(Icons.check),
       ),
     );
   }

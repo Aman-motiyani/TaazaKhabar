@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:taazakhabar/blocs/news_bloc/news_bloc.dart';
 import 'package:taazakhabar/blocs/news_bloc/news_event.dart';
 import 'package:taazakhabar/blocs/news_bloc/news_state.dart';
 import 'package:taazakhabar/blocs/weather_bloc/weather_bloc.dart';
 import 'package:taazakhabar/data/models/news_model.dart';
-import 'package:taazakhabar/ui/screens/home/newsdetail.dart';
 import 'package:taazakhabar/ui/widgets/news_card.dart';
 
 import '../../../../blocs/onboarding_bloc/onboarding_bloc.dart';
-import '../../../../data/models/user_model.dart';
+import '../../../../blocs/onboarding_bloc/onboarding_controller.dart';
 import '../../../../data/models/weather_model.dart';
 import '../../../../services/local_database/entities/local_news.dart';
 import '../../../../services/local_database/isar_database.dart';
@@ -22,65 +23,84 @@ class FeedScreen extends StatefulWidget {
 }
 
 class _FeedScreenState extends State<FeedScreen> {
+  OnboardingController controller = Get.put(OnboardingController());
   final IsarService _isarService = IsarService();
-  final city = "bengaluru";
+  late String user;
+  late String _cityName;
 
   @override
   void initState() {
     super.initState();
-    // Dispatch the FetchNews event when the widget is initialized
+    user = ''; // Initialize the user variable
+    BlocProvider.of<OnboardingBloc>(context).add(FetchInitialData());
     BlocProvider.of<NewsBloc>(context).add(FetchNews());
-    BlocProvider.of<WeatherBloc>(context).add(FetchWeather(city));
+    // BlocProvider.of<WeatherBloc>(context).add(FetchWeather(controller.cityName.value));
   }
 
   @override
   Widget build(BuildContext context) {
+    return BlocBuilder<OnboardingBloc, OnboardingState>(
+      builder: (context, state) {
+        // Extract cityName and name from the current state
+        String cityName = '';
+        String name = '';
+        if (state is CityNameUpdated) {
+          cityName = state.cityName;
+        }
+        if (state is NameUpdated) {
+          name = state.name;
+        }
+        //
+        // Update the cityName and user variables
+        _cityName = cityName;
+        user = name;
 
-    return BlocBuilder<NewsBloc, NewsState>(
-      builder: (context, newsState) {
-        return BlocBuilder<WeatherBloc, WeatherState>(
-          builder: (context, weatherState) {
-            return BlocBuilder<OnboardingBloc, OnboardingState>(
-              builder: (context, onboardingState) {
-                final userProfile = OnboardingBloc().userProfile;
-                return Scaffold(
-                  body: _buildContent(newsState, weatherState, userProfile),
-                );
-              },
-            );
-          },
+        print('City Name: $_cityName');
+        print('Name: $user');
+
+        // Fetch news and weather data based on cityName
+        BlocProvider.of<NewsBloc>(context).add(FetchNews());
+        BlocProvider.of<WeatherBloc>(context).add(FetchWeather(_cityName));
+
+        return Scaffold(
+          body: BlocBuilder<NewsBloc, NewsState>(
+            builder: (context, newsState) {
+              return BlocBuilder<WeatherBloc, WeatherState>(
+                builder: (context, weatherState) {
+                  return _buildContent(newsState, weatherState);
+                },
+              );
+            },
+          ),
         );
       },
     );
   }
 
-
-
-
-  Widget _buildContent(NewsState state , WeatherState weatherState,UserProfile userProfile) {
+  Widget _buildContent(NewsState state , WeatherState weatherState) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
             child: weatherState is WeatherLoaded
-                ? _buildGreetingAndWeather(weatherState.weather , userProfile.username)
+                ? _buildGreetingAndWeather(weatherState.weather)
                 : weatherState is WeatherLoading
                 ? _buildLoading()
-                : const Center(child: Text("Cant Get Weather Information"))
+                : const Center(child: Text("Can't Get Weather Information"))
         ),
         SizedBox(height: 16),
         Expanded(
-          child: state is NewsLoaded
-              ? _buildNewsList(state.newsList)
-              : state is NewsLoading
-              ? _buildLoading()
-              : Center(child: Text("Can't get News Information"))
+            child: state is NewsLoaded
+                ? _buildNewsList(state.newsList)
+                : state is NewsLoading
+                ? _buildLoading()
+                : Center(child: Text("Can't get News Information"))
         ),
       ],
     );
   }
 
-  Widget _buildGreetingAndWeather(WeatherModel weather, String username) {
+  Widget _buildGreetingAndWeather(WeatherModel weather) {
     final currentTime = DateTime.now();
     String greeting;
     if (currentTime.hour < 12) {
@@ -101,7 +121,7 @@ class _FeedScreenState extends State<FeedScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '$greeting, Aman',
+                '$greeting, $user',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               Container(
@@ -110,8 +130,6 @@ class _FeedScreenState extends State<FeedScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 8),
-                    // Weather widget
-                    // Replace this with your weather widget implementation
                     Text(
                       'Weather Condition: ${weather.weather[0].main}',
                       style: TextStyle(fontSize: 14 , fontWeight: FontWeight.bold),
@@ -150,7 +168,7 @@ class _FeedScreenState extends State<FeedScreen> {
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  backgroundColor: Colors.redAccent,
+                    backgroundColor: Colors.redAccent,
                     content: Text(
                       "News already saved",
                       style: TextStyle(color: Colors.white),
@@ -164,7 +182,7 @@ class _FeedScreenState extends State<FeedScreen> {
             print("Error Saving news $e");
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                backgroundColor: Colors.redAccent,
+                  backgroundColor: Colors.redAccent,
                   content:
                   Text(
                     "Error Saving News",
@@ -186,3 +204,4 @@ class _FeedScreenState extends State<FeedScreen> {
     );
   }
 }
+

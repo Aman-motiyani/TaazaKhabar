@@ -1,20 +1,35 @@
 part of 'onboarding_bloc.dart';
 
+@immutable
 abstract class OnboardingState {}
 
-class NameScreenState extends OnboardingState {}
+class OnboardingInitial extends OnboardingState {}
 
-class CityScreenState extends OnboardingState {}
+class NameUpdated extends OnboardingState {
+  final String name;
 
-class CategoryScreenState extends OnboardingState {}
+  NameUpdated(this.name);
+}
 
-class ProfileUpdatedState extends OnboardingState {}
+class CategoriesUpdated extends OnboardingState {
+  final List<String> selectedCategories;
 
+  CategoriesUpdated(this.selectedCategories);
+}
 
-abstract class SettingsState {}
+class CityNameUpdated extends OnboardingState {
+  final String cityName;
 
-class SettingsScreenState extends SettingsState {}
+  CityNameUpdated(this.cityName);
+}
 
-class ProfileSettingsUpdatedState extends SettingsState {}
+class DataLoaded extends OnboardingState{
+  final String name;
+  final List<String> selectedCategories;
+  final String cityName;
 
+  DataLoaded(this.name,this.selectedCategories,this.cityName);
 
+  @override
+  List<Object> get props => [name,selectedCategories,cityName];
+}

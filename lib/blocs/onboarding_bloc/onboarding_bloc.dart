@@ -1,36 +1,44 @@
 import 'dart:async';
-
 import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
-
-import '../../data/models/user_model.dart';
 
 part 'onboarding_event.dart';
 part 'onboarding_state.dart';
 
 class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
-  UserProfile userProfile = UserProfile(username: '', city: '', categories: []);
+  String name = '';
+  List<String> selectedCategories = [];
+  String cityName = '';
 
-  OnboardingBloc() : super(NameScreenState()) {
-    on<NameEnteredEvent>(_onNameEntered);
-    on<CityEnteredEvent>(_onCityEntered);
-    on<CategorySelectedEvent>(_onCategorySelected);
+  OnboardingBloc() : super(OnboardingInitial()) {
+    // Register event handlers for each event
+    on<NameChanged>((event, emit) {
+      name = event.name;
+      emit(DataLoaded(name, selectedCategories, cityName));
+    });
+
+    on<CategorySelected>((event, emit) {
+      if (selectedCategories.contains(event.category)) {
+        selectedCategories.remove(event.category);
+      } else {
+        selectedCategories.add(event.category);
+      }
+      emit(DataLoaded(name, selectedCategories, cityName));
+    });
+
+    on<CityNameChanged>((event, emit) {
+      cityName = event.cityName;
+      emit(DataLoaded(name, selectedCategories, cityName));
+    });
+
+    on<FetchInitialData>((event, emit) {
+      emit(DataLoaded(name, selectedCategories, cityName));
+    });
   }
 
-  Stream<OnboardingState> _onNameEntered(NameEnteredEvent event, Emitter<OnboardingState> emit) async* {
-    userProfile = UserProfile(username: event.username, city: '', categories: []);
-    yield CityScreenState();
-  }
-
-  Stream<OnboardingState> _onCityEntered(CityEnteredEvent event, Emitter<OnboardingState> emit) async* {
-    userProfile = UserProfile(username: userProfile.username, city: event.city, categories: []);
-    yield CategoryScreenState();
-  }
-
-  Stream<OnboardingState> _onCategorySelected(CategorySelectedEvent event, Emitter<OnboardingState> emit) async* {
-    userProfile = UserProfile(username: userProfile.username, city: userProfile.city, categories: event.categories);
-    yield ProfileUpdatedState();
+  @override
+  Stream<OnboardingState> mapEventToState(OnboardingEvent event) async* {
+    // This method is empty because event handlers are registered using `on<Event>` method
   }
 }
-
-
