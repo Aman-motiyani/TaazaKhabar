@@ -15,6 +15,7 @@ class SavedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme col = Theme.of(context).colorScheme;
     return BlocProvider(
       create: (context) => LocalNewsBloc(IsarService())..add(LoadSavedNews()),
       child: Scaffold(
@@ -22,11 +23,16 @@ class SavedScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Text(
-                  'Saved News :',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Container(
+                width: MediaQuery.of(context).size.width,
+                child: Card(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Text(
+                      'Saved News :',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: col.primary),
+                    ),
+                  ),
                 ),
               ),
               Expanded(child: _buildNewsList()),

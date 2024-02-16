@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 part 'onboarding_event.dart';
 part 'onboarding_state.dart';
@@ -37,8 +38,25 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     });
   }
 
+  Future<void> loadFromSharedPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    name = prefs.getString('name') ?? '';
+    print('loading pref ${name}');
+    cityName = prefs.getString('cityName') ?? '';
+    selectedCategories = prefs.getStringList('selectedCategories') ?? [];
+    emit(DataLoaded(name, selectedCategories, cityName));
+  }
+
+  // Save data to shared preferences
+  Future<void> saveToSharedPreferences({String? Uname}) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('name', Uname!);
+    print('Setting pref ${name}');
+    prefs.setString('cityName', cityName);
+    prefs.setStringList('selectedCategories', selectedCategories);
+  }
+
   @override
   Stream<OnboardingState> mapEventToState(OnboardingEvent event) async* {
-    // This method is empty because event handlers are registered using `on<Event>` method
   }
 }

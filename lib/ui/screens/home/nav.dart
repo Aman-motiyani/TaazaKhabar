@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:taazakhabar/blocs/news_bloc/news_bloc.dart';
 import 'package:taazakhabar/blocs/onboarding_bloc/onboarding_bloc.dart';
@@ -50,58 +51,73 @@ class _BottomNavState extends State<NavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme col = Theme.of(context).colorScheme;
     // Define a map to associate tab titles with widgets
     final Map<String, Widget> pages = {
-      'Feed': BlocProvider(
-        create: (context) => NewsBloc(newsRepository),
-        child: BlocProvider(
-          create: (context) => WeatherBloc(weatherRepository),
-          child: BlocProvider(
-            create: (context) => OnboardingBloc(),
-            child: FeedScreen(),
-          ),
-        ),
-      ),
-      'Fav': BlocProvider(
-        create: (context) => NewsBloc(newsRepository),
-        child: FavScreen(),
-      ),
+      'Feed': FeedScreen(),
+      'Fav': FavScreen(),
       'Saved': SavedScreen(),
     };
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Taaza Khabar"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => Settings(onboardingBloc: OnboardingBloc(),),),
-              );
-            },
-            icon: const Icon(Icons.settings),
+    return WillPopScope(
+      onWillPop: () async {
+        // Show an AlertDialog to confirm exiting the app
+        bool exit = await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Exit App'),
+            content: Text('Are you sure you want to exit the app?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false), // Stay in the app
+                child: Text('No'),
+              ),
+              TextButton(
+                onPressed: () => SystemNavigator.pop(),// Exit the app
+                child: Text('Yes'),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: pages[tabTitles[_selectedIndex]],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home),
-            label: 'Feed',
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.favorite),
-            label: 'Fav',
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.save),
-            label: 'Saved',
-          ),
-        ],
+        );
+
+        // Return true if the user wants to exit, false otherwise
+        return exit ?? false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          leading: SizedBox(),
+          title: Text("Taaza Khabar" , style: TextStyle(color: col.onSecondaryContainer ,fontWeight: FontWeight.bold)),
+          actions: [
+            IconButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const Settings()));
+              },
+              icon:  Icon(Icons.settings , color: col.onSecondaryContainer),
+            ),
+          ],
+        ),
+        body: pages[tabTitles[_selectedIndex]],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          items: [
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.home),
+              label: 'Feed',
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.favorite),
+              label: 'Fav',
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.save),
+              label: 'Saved',
+            ),
+          ],
+        ),
       ),
     );
   }

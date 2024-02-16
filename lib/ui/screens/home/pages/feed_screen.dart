@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:taazakhabar/blocs/news_bloc/news_bloc.dart';
 import 'package:taazakhabar/blocs/news_bloc/news_event.dart';
 import 'package:taazakhabar/blocs/news_bloc/news_state.dart';
 import 'package:taazakhabar/blocs/weather_bloc/weather_bloc.dart';
 import 'package:taazakhabar/data/models/news_model.dart';
 import 'package:taazakhabar/ui/widgets/news_card.dart';
-
 import '../../../../blocs/onboarding_bloc/onboarding_bloc.dart';
-import '../../../../blocs/onboarding_bloc/onboarding_controller.dart';
 import '../../../../data/models/weather_model.dart';
 import '../../../../services/local_database/entities/local_news.dart';
 import '../../../../services/local_database/isar_database.dart';
@@ -23,44 +19,29 @@ class FeedScreen extends StatefulWidget {
 }
 
 class _FeedScreenState extends State<FeedScreen> {
-  OnboardingController controller = Get.put(OnboardingController());
+  late String name;
+  // final controller = Get.find<OnboardingController>();
   final IsarService _isarService = IsarService();
-  late String user;
-  late String _cityName;
 
   @override
   void initState() {
     super.initState();
-    user = ''; // Initialize the user variable
-    BlocProvider.of<OnboardingBloc>(context).add(FetchInitialData());
+    BlocProvider.of<OnboardingBloc>(context).loadFromSharedPreferences();
     BlocProvider.of<NewsBloc>(context).add(FetchNews());
-    // BlocProvider.of<WeatherBloc>(context).add(FetchWeather(controller.cityName.value));
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
-        // Extract cityName and name from the current state
-        String cityName = '';
-        String name = '';
-        if (state is CityNameUpdated) {
-          cityName = state.cityName;
-        }
-        if (state is NameUpdated) {
+        print(state);
+        if (state is DataLoaded) {
+          print("focus ${state.name}");
+          print("focus ${state.cityName}");
           name = state.name;
+          print(state.selectedCategories);
+          BlocProvider.of<WeatherBloc>(context).add(FetchWeather(state.cityName));
         }
-        //
-        // Update the cityName and user variables
-        _cityName = cityName;
-        user = name;
-
-        print('City Name: $_cityName');
-        print('Name: $user');
-
-        // Fetch news and weather data based on cityName
-        BlocProvider.of<NewsBloc>(context).add(FetchNews());
-        BlocProvider.of<WeatherBloc>(context).add(FetchWeather(_cityName));
 
         return Scaffold(
           body: BlocBuilder<NewsBloc, NewsState>(
@@ -110,6 +91,7 @@ class _FeedScreenState extends State<FeedScreen> {
     } else {
       greeting = 'Good evening';
     }
+    final ColorScheme col = Theme.of(context).colorScheme;
     return Container(
       width: MediaQuery.of(context).size.width,
       child: Card(
@@ -121,9 +103,9 @@ class _FeedScreenState extends State<FeedScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '$greeting, $user',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
+                  '$greeting, $name ',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: col.primary),
+                ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Column(

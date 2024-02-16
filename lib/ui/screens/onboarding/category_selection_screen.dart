@@ -1,20 +1,19 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../blocs/onboarding_bloc/onboarding_bloc.dart';
-import 'package:taazakhabar/ui/screens/home/nav.dart';
+import '../home/nav.dart';
 
 class CategoryScreen extends StatefulWidget {
-  final OnboardingBloc onboardingBloc; // Accept the OnboardingBloc instance as a parameter
-  const CategoryScreen({Key? key, required this.onboardingBloc}) : super(key: key);
+  const CategoryScreen({Key? key}) : super(key: key);
 
   @override
-  _CategoryScreenState createState() => _CategoryScreenState();
+  State<CategoryScreen> createState() => _CategoryScreen();
 }
 
-class _CategoryScreenState extends State<CategoryScreen> {
-  List<String> selectedCategories = []; // List to store selected categories
-
-  // List of categories
+class _CategoryScreen extends State<CategoryScreen> {
+  late List<String> selectedCategories = [];
   final List<String> categories = [
     'Business',
     'Entertainment',
@@ -22,43 +21,67 @@ class _CategoryScreenState extends State<CategoryScreen> {
     'Technology',
   ];
 
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Select Categories'),
-      ),
-      body: ListView.builder(
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          return ListTile(
-            title: Text(category),
-            // Check if the category is already selected
-            selected: selectedCategories.contains(category),
-            onTap: () {
-              setState(() {
-                // If category is already selected, remove it, else add it
-                if (selectedCategories.contains(category)) {
-                  selectedCategories.remove(category);
-                } else {
-                  selectedCategories.add(category);
-                }
-              });
-            },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Add the list of selected categories to the bloc
-         for (String category in categories){
-           widget.onboardingBloc.add(CategorySelected(category));
-         }
-          Navigator.push(context, MaterialPageRoute(builder: (context) => NavigationScreen()));
-        },
-        child: Icon(Icons.check),
-      ),
+    return BlocBuilder<OnboardingBloc, OnboardingState>(
+      builder: (context, state) {
+        if (state is DataLoaded) {
+          selectedCategories = List.from(state.selectedCategories);
+        }
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('Select Categories'),
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: _buildCategoryList(),
+          ),
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.only(bottom: 30 , right: 10),
+            child: FloatingActionButton(
+              onPressed: () {
+                BlocProvider.of<OnboardingBloc>(context).saveToSharedPreferences();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NavigationScreen(),
+                  ),
+                );
+              },
+              child: Icon(Icons.check),
+            ),
+          ),
+        );
+      },
     );
   }
+
+  Widget _buildCategoryList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: categories.length,
+      itemBuilder: (context, index) {
+        final category = categories[index];
+        final isSelected = selectedCategories.contains(category);
+        return CheckboxListTile(
+          title: Text(category),
+          value: isSelected,
+          onChanged: (value) {
+            setState(() {
+              if (value!) {
+                selectedCategories.add(category);
+              } else {
+                selectedCategories.remove(category);
+              }
+            });
+            // Update the selected categories in the bloc
+            BlocProvider.of<OnboardingBloc>(context)
+                .add(CategorySelected(category));
+          }
+        );
+      },
+    );
+  }
+
 }

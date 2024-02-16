@@ -9,6 +9,7 @@ class WeatherRepository {
   Future<WeatherModel> fetchWeather(String city) async {
     try {
       final response = await weatherService.getWeather(city: city);
+      print(response.body);
       if (response.isSuccessful) {
         final Map<String, dynamic>? responseData = response.body;
         if (responseData != null) {

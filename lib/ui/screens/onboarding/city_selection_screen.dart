@@ -1,36 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';// Import the geocoding package
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import '../../../blocs/onboarding_bloc/onboarding_bloc.dart';
 import 'package:taazakhabar/ui/screens/onboarding/category_selection_screen.dart';
 
-import '../../../blocs/onboarding_bloc/onboarding_controller.dart';
+class CityScreen extends StatefulWidget {
+  final Position position;
 
-class CityScreen extends StatelessWidget {
-  final OnboardingBloc onboardingBloc; // Accept the OnboardingBloc instance as a parameter
-  const CityScreen({Key? key, required this.onboardingBloc}) : super(key: key);
+  const CityScreen({Key? key, required this.position})
+      : super(key: key);
+
+  @override
+  _CityScreenState createState() => _CityScreenState();
+}
+
+class _CityScreenState extends State<CityScreen> {
+  final TextEditingController _textController = TextEditingController();
+  String? city;
+
+  @override
+  void initState() {
+    super.initState();
+    _getCityNameFromCoordinates();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController _textController = TextEditingController();
-    OnboardingController controller = Get.put(OnboardingController());
-
+    final ColorScheme col = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text("Select City"),
-        leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: () { Navigator.pop(context); }),
+        backgroundColor: col.primaryContainer,
+        title: Text(
+          "Select City",
+          style: TextStyle(color: col.primary),
+        ),
+        leading: IconButton(
+          color: col.primary,
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: BlocListener<OnboardingBloc, OnboardingState>(
-            bloc: onboardingBloc,
-            listener: (context, state) {
-              if (state is CityNameUpdated) {
-                print(state.cityName); // Print the city name when it's updated
-              }
-            },
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -40,14 +57,22 @@ class CityScreen extends StatelessWidget {
                     hintText: 'Enter your city',
                     border: OutlineInputBorder(),
                   ),
+                  onChanged: (value) {
+                    city = value;
+                  },
                 ),
                 SizedBox(height: 16.0),
                 ElevatedButton(
                   onPressed: () {
-                    String city = _textController.text;
-                    // controller.cityName.value = city;
-                    onboardingBloc.add(CityNameChanged(city)); // Use the passed OnboardingBloc instance
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => CategoryScreen(onboardingBloc: onboardingBloc)));
+                    if (city != null) {
+                      context.read<OnboardingBloc>().add(CityNameChanged(city!)); // Use the passed OnboardingBloc instance
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CategoryScreen(),
+                        ),
+                      );
+                    }
                   },
                   child: Text('Next'),
                 ),
@@ -55,7 +80,26 @@ class CityScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
+      );
+  }
+
+  // Method to get the city name from coordinates
+  Future<void> _getCityNameFromCoordinates() async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        widget.position.latitude,
+        widget.position.longitude,
+      );
+      if (placemarks.isNotEmpty) {
+        Placemark placemark = placemarks[0];
+        String cityName = placemark.locality ?? ''; // Use locality for city name
+        setState(() {
+          _textController.text = cityName; // Set the city name in the text field
+          city = cityName; // Set the city name in the state variable
+        });
+      }
+    } catch (e) {
+      print('Error getting city name: $e');
+    }
   }
 }
