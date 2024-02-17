@@ -46,8 +46,9 @@ class SavedScreen extends StatelessWidget {
   Widget _buildNewsList() {
     return BlocBuilder<LocalNewsBloc, LocalNewsState>(
       builder: (context, state) {
+        print(state);
         if (state is LocalNewsLoading) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         } else if (state is LocalNewsLoaded) {
           if (state.savedNews.isEmpty) {
             return Center(
@@ -63,6 +64,7 @@ class SavedScreen extends StatelessWidget {
                 final news = state.savedNews[index];
                 if (news != null) {
                   return NewsCard(
+                    localNews: news,
                     icon: Icons.delete,
                     onPressed: () {
                       BlocProvider.of<LocalNewsBloc>(context)
@@ -71,7 +73,6 @@ class SavedScreen extends StatelessWidget {
                         backgroundColor: Colors.redAccent,
                           content: Text("News Deleted from Saved", style: TextStyle(color: Colors.white)), duration: Duration(seconds: 2)));
                     },
-                    localNews: news,
                   );
                 } else {
                   return Text("No data"); // Or you can show a loading indicator or placeholder
@@ -80,7 +81,7 @@ class SavedScreen extends StatelessWidget {
             );
           }
         } else {
-          return Text("Error loading news");
+          return Center(child: Text("Error loading news"));
         }
       },
     );

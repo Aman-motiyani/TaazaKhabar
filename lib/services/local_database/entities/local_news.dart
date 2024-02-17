@@ -15,8 +15,7 @@ class LocalNews{
   )
 
 
-  @Ignore()
-  late Uint8List imageBytes;
+  late List<int> imageBytes;
   late String title;
   late String description;
   late String publishedAt;

@@ -1,6 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:http/http.dart' as http;
 import 'entities/local_news.dart';
 
 class IsarService {
@@ -13,7 +15,23 @@ class IsarService {
   }
 
   static Isar get isar => _isar;
-
+  Future<List<int>> getImageBytes(String imageUrl) async {
+    try {
+      // Fetch the image data from the URL
+      var response = await http.get(Uri.parse(imageUrl));
+      if (response.statusCode == 200) {
+        final data =  response.bodyBytes;
+        List<int> intList = data.toList();
+        return intList;
+      } else {
+        // If the request fails, return null
+        return [];
+      }
+    } catch (e) {
+      // If an error occurs, return null
+      return [];
+    }
+  }
   Future<List<LocalNews>> getAllSavedNews() async {
     List<LocalNews> newsList = []; // Initialize as an empty list
     await isar.txn(() async {

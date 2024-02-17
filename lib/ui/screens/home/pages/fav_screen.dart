@@ -109,7 +109,7 @@ class _FavScreenState extends State<FavScreen> {
                 } else if (state is NewsLoaded) {
                   return _buildNewsList(state.newsList);
                 } else if (state is NewsError) {
-                  return Center(child: Text(state.message));
+                  return const Center(child: Text("Can't Get News Information"));
                 }
                 return SizedBox(); // Placeholder
               },
@@ -127,9 +127,12 @@ class _FavScreenState extends State<FavScreen> {
         final news = newsList[index];
         return NewsCard(
           onPressed: () async {
-            try {
+            List<int> imageData;
+            try{
+              imageData = await _isarService.getImageBytes(news.urlToImage);
               final localNews = LocalNews()
                 ..title = news.title
+                ..imageBytes = imageData
                 ..description = news.description
                 ..publishedAt = news.publishedAt;
 

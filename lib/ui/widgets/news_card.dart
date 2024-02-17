@@ -39,7 +39,18 @@ class NewsCard extends StatelessWidget {
                   Flexible(
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => NewsDetailScreen(news: news!)));
+                          if (news!=null)
+                          {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                                NewsDetailScreen( news : news,
+                                ),));
+                          }
+                        else{
+                            print(localNews);
+                            Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                                NewsDetailScreen( localNews : localNews,
+                                ),));
+                        }
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

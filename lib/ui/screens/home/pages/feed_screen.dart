@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:taazakhabar/blocs/news_bloc/news_bloc.dart';
@@ -136,10 +138,13 @@ class _FeedScreenState extends State<FeedScreen> {
       itemBuilder: (context, index) {
         final news = newsList[index];
         return NewsCard(onPressed: () async {
+          List<int> imageData;
           try{
+            imageData = await _isarService.getImageBytes(news.urlToImage);
             final localNews = LocalNews()
               ..title = news.title
               ..description = news.description
+              ..imageBytes = imageData
               ..publishedAt = news.publishedAt;
 
             final isSaved = await _isarService.saveNews(localNews);

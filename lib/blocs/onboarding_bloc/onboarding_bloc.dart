@@ -25,7 +25,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       } else {
         selectedCategories.add(event.category);
       }
-      emit(DataLoaded(name, selectedCategories, cityName));
+      emit(CategoriesUpdated(selectedCategories));
     });
 
     on<CityNameChanged>((event, emit) {
@@ -50,7 +50,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   // Save data to shared preferences
   Future<void> saveToSharedPreferences({String? Uname}) async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('name', Uname!);
+    prefs.setString('name', Uname ?? name);
     print('Setting pref ${name}');
     prefs.setString('cityName', cityName);
     prefs.setStringList('selectedCategories', selectedCategories);

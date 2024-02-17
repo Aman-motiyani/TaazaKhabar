@@ -1,20 +1,31 @@
+import 'dart:typed_data';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:taazakhabar/data/models/news_model.dart';
+import 'package:taazakhabar/services/local_database/entities/local_news.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class NewsDetailScreen extends StatelessWidget{
-  final NewsModel news;
+import '../../../services/local_database/isar_database.dart';
 
-  const NewsDetailScreen({super.key, required this.news});
+class NewsDetailScreen extends StatelessWidget {
+  final NewsModel? news;
+  final LocalNews? localNews;
+
+  const NewsDetailScreen({Key? key, this.news, this.localNews}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    String publishedAt = news.publishedAt;
-    List<String> parts = publishedAt.split('T');
-
-    String date = parts[0]; // Contains the date part
-    String time = parts[1].substring(0, 5);
-
+    final String title = localNews?.title ?? news!.title;
+    final String description = localNews?.description ?? news!.description;
+    final String publishedAt = localNews?.publishedAt ?? news!.publishedAt;
+    final Uri url = Uri.parse(news?.url ?? '');
+    final List<String> parts = publishedAt.split('T');
+    final String date = parts.first;
+    final String time = parts.last.substring(0, 5);
+    final Uint8List image = Uint8List.fromList(localNews?.imageBytes ?? []);
+    print(localNews?.imageBytes);
     return Scaffold(
       appBar: AppBar(
         title: Text('News'),
@@ -25,7 +36,7 @@ class NewsDetailScreen extends StatelessWidget{
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              news.title,
+              title,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
@@ -47,42 +58,40 @@ class NewsDetailScreen extends StatelessWidget{
                   ],
                 ),
                 Spacer(),
-                IconButton(
+                localNews == null ? IconButton(
                   onPressed: () {
-                    // Share news functionality
+                    Share.shareUri(url);
                   },
                   icon: Icon(Icons.share),
-                ),
-                IconButton(
-                  onPressed: () {
-                    // Save or delete news functionality
+                ) : SizedBox(), // If localNews is not null, hide the share button
+                localNews == null ? IconButton(
+                  onPressed: () async {
+                    await launchUrl(url);
                   },
-                  icon: Icon(Icons.save_alt),
-                ),
+                  icon: Icon(Icons.open_in_browser),
+                ) : SizedBox(), // If localNews is not null, hide the open in browser button
               ],
             ),
+
             SizedBox(height: 16),
-            if (news.urlToImage.isNotEmpty)
-              Image.network(
-                news.urlToImage,
+            news != null ? Image.network(
+                news!.urlToImage,
                 width: double.infinity,
                 height: 200,
-                fit: BoxFit.cover,
-              ),
+                fit: BoxFit.cover,)
+            : image.isNotEmpty ?
+            Image.memory(
+              image,
+              fit: BoxFit.cover,
+            ):SizedBox(),
             SizedBox(height: 16),
             Text(
-              news.description,
+              description,
               style: TextStyle(fontSize: 16),
             ),
             SizedBox(height: 16),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Share news functionality
-        },
-        child: Icon(Icons.open_in_browser),
       ),
     );
   }
