@@ -1,10 +1,10 @@
 class URLConst{
-
   static const newsApi = 'https://newsapi.org/v2/top-headlines?country=in&apiKey=b3c093eb64a040708058d0733a4a511a';
 
   static const weatherApi = 'https://api.openweathermap.org/data/2.5/weather?&units=metric&appid=5d7b702e382e8bcdd650db6eebf78fc1';
 }
 
+// "2024-02-19T12:30:00Z",
 
 // val newsJsonArray = it.getJSONArray("articles")
 // val newsArray = ArrayList<News>()

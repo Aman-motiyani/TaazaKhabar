@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:taazakhabar/blocs/news_bloc/news_bloc.dart';
-import 'package:taazakhabar/blocs/onboarding_bloc/onboarding_bloc.dart';
-import 'package:taazakhabar/blocs/weather_bloc/weather_bloc.dart';
-import 'package:taazakhabar/services/local_database/isar_database.dart';
-import 'package:taazakhabar/services/news_service.dart';
-import 'package:taazakhabar/services/weather_service.dart';
-import 'package:taazakhabar/ui/screens/home/nav.dart';
-import 'package:taazakhabar/ui/screens/onboarding/name_input_screen.dart.dart';
-
-import 'data/repository/news_repository.dart';
-import 'data/repository/weather_repository.dart';
+import 'package:taazakhabar/modules/news/infrastructure/repos/news_repository.dart';
+import 'package:taazakhabar/modules/news/infrastructure/services/news_service.dart';
+import 'package:taazakhabar/modules/news/presentation/logic/news_bloc/news_bloc.dart';
+import 'package:taazakhabar/modules/offline_news/infrastructure/service/isar_database.dart';
+import 'package:taazakhabar/modules/onboarding/presentation/logic/onboarding_bloc/onboarding_bloc.dart';
+import 'package:taazakhabar/modules/weather/infrastructure/repos/weather_repository.dart';
+import 'package:taazakhabar/modules/weather/infrastructure/services/weather_service.dart';
+import 'package:taazakhabar/modules/weather/presentation/logic/weather_bloc/weather_bloc.dart';
+import 'package:taazakhabar/ui/home/nav.dart';
+import 'package:taazakhabar/modules/onboarding/presentation/ui/name_input_screen.dart.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
