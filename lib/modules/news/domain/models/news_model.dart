@@ -26,3 +26,18 @@ class NewsModel {
 
   Map<String, dynamic> toJson() => _$NewsModelToJson(this);
 }
+//
+// @freezed
+// class NewsModel with _$NewsModel {
+//   const factory NewsModel({
+//     required String author,
+//     required String title,
+//     required String description,
+//     required String url,
+//     required String urlToImage,
+//     required String publishedAt,
+//     required String content,
+//   }) = _NewsModel;
+//
+//   factory NewsModel.fromJson(Map<String, dynamic> json) => _$NewsModelFromJson(json);
+// }
