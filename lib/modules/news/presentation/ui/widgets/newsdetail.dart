@@ -16,11 +16,11 @@ class NewsDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String title = localNews?.title ?? news!.title;
-    final String description = localNews?.description ?? news!.description;
-    final String publishedAt = localNews?.publishedAt ?? news!.publishedAt;
+    final String? title = localNews?.title ?? news!.title;
+    final String? description = localNews?.description ?? news!.description;
+    final String? publishedAt = localNews?.publishedAt ?? news!.publishedAt;
     final Uri url = Uri.parse(news?.url ?? '');
-    final List<String> parts = publishedAt.split('T');
+    final List<String> parts = publishedAt!.split('T');
     final String date = parts.first;
     final String time = parts.last.substring(0, 5);
     final Uint8List image = Uint8List.fromList(localNews?.imageBytes ?? []);
@@ -35,7 +35,7 @@ class NewsDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              title,
+              title ?? '',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
@@ -74,7 +74,7 @@ class NewsDetailScreen extends StatelessWidget {
 
             SizedBox(height: 16),
             news != null ? Image.network(
-                news!.urlToImage,
+                news?.urlToImage ?? '',
                 width: double.infinity,
                 height: 200,
                 fit: BoxFit.cover,)
@@ -85,7 +85,7 @@ class NewsDetailScreen extends StatelessWidget {
             ):SizedBox(),
             SizedBox(height: 16),
             Text(
-              description,
+              description ?? '',
               style: TextStyle(fontSize: 16),
             ),
             SizedBox(height: 16),

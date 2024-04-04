@@ -21,8 +21,8 @@ class NewsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ColorScheme col = Theme.of(context).colorScheme;
-    final String title = localNews != null ? localNews!.title : news!.title;
-    final String description = localNews != null ? localNews!.description : news!.description;
+    final String? title = localNews != null ? localNews!.title : news!.title;
+    final String? description = localNews != null ? localNews!.description : news!.description;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -57,7 +57,7 @@ class NewsCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            title,
+                            title ?? '',
                             style: TextStyle(
                               fontSize: 14,
                               color: col.primary,
@@ -68,7 +68,7 @@ class NewsCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            description,
+                            description ?? '',
                             style:  TextStyle(
                               fontSize: 12,
                               color: col.onSurfaceVariant,

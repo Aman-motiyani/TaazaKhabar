@@ -62,6 +62,7 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   Widget _buildContent(NewsState state , WeatherState weatherState) {
+    print(state);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -141,12 +142,12 @@ class _FeedScreenState extends State<FeedScreen> {
         return NewsCard(onPressed: () async {
           List<int> imageData;
           try{
-            imageData = await _isarService.getImageBytes(news.urlToImage);
+            imageData = await _isarService.getImageBytes(news.urlToImage?? '');
             final localNews = LocalNews()
-              ..title = news.title
-              ..description = news.description
+              ..title = news.title ?? ''
               ..imageBytes = imageData
-              ..publishedAt = news.publishedAt;
+              ..description = news.description ?? ''
+              ..publishedAt = news.publishedAt ?? '';
 
             final isSaved = await _isarService.saveNews(localNews);
             if (isSaved) {

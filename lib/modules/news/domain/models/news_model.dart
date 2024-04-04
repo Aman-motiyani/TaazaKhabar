@@ -4,13 +4,13 @@ part 'news_model.g.dart';
 
 @JsonSerializable()
 class NewsModel {
-  final String author;
-  final String title;
-  final String description;
-  final String url;
-  final String urlToImage;
-  final String publishedAt;
-  final String content;
+  final String? author;
+  final String? title;
+  final String? description;
+  final String? url;
+  final String? urlToImage;
+  final String? publishedAt;
+  final String? content;
 
   NewsModel({
     required this.author,

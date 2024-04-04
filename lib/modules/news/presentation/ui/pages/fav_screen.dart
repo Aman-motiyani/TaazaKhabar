@@ -125,14 +125,13 @@ class _FavScreenState extends State<FavScreen> {
           onPressed: () async {
             List<int> imageData;
             try{
-              imageData = await _isarService.getImageBytes(news.urlToImage);
+              imageData = await _isarService.getImageBytes(news.urlToImage ?? '');
               final localNews = LocalNews()
-                ..title = news.title
+                ..title = news.title ?? ''
                 ..imageBytes = imageData
-                ..description = news.description
-                ..publishedAt = news.publishedAt;
-
-              final isSaved = await _isarService.saveNews(localNews);
+                ..description = news.description ?? ''
+                ..publishedAt = news.publishedAt ?? '';
+                          final isSaved = await _isarService.saveNews(localNews);
               if (isSaved) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                   backgroundColor: Colors.green,
